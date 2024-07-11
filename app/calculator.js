@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 
-export default function CalculatorScreen () {
-    
+export default function CalculatorScreen() {
+
     const [display, setDisplay] = useState('');
     const [result, setResult] = useState('');
 
@@ -18,13 +18,20 @@ export default function CalculatorScreen () {
             setDisplay(display.slice(0, -1)); // Delete a value on the screen
         } else if (value === '=') {
             try {
-                let expression = display.replace('+', '/').replace('×', '*').replace(',', '.').replace('%', '/100');
-                if (expression.includes('√')) { // ?
-                    expression = expression.replace(/√/g, 'Math.sqrt');
-                }
-                setResult(eval(expression).toString()); // ?
-            } catch { 
-                setResult('');
+                let expression = display
+                    .replace('÷', '/')
+                    .replace('×', '*')
+                    .replace(',', '.');
+
+                // Handle square root
+                expression = expression.replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)');
+                
+                // Handle percentage
+                expression = expression.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
+
+                setResult(eval(expression).toString()); // Evaluate the expression
+            } catch {
+                setResult('Erro'); // Set result to 'Error' if evaluation fails
             }
         } else {
             setDisplay(display + value);
@@ -42,7 +49,7 @@ export default function CalculatorScreen () {
 
     /**
      * Check if the button is an operator
-     * @param {string} button - The button valur
+     * @param {string} button - The button value
      * @returns {boolean} - True if the button is an operator, false otherwise
      */
     const isOperator = (button) => ['+', '-', '×', '÷', '⌫', ',', 'C', '%', '√'].includes(button);
@@ -78,15 +85,16 @@ export default function CalculatorScreen () {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: 'black',
     },
     displayContainer: {
         flex: 1,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: 'black',
         justifyContent: 'flex-end',
         alignItems: 'flex-end',
-        padding: 20,
-        paddingTop: 100,
+        paddingTop: 260,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
     },
     displayText: {
         fontSize: 35,
@@ -101,27 +109,27 @@ const styles = StyleSheet.create({
     },
     buttonsContainer: {
         flex: 3,
-        backgroundColor: '#0a0a0a',
-        padding: 20,
+        backgroundColor: 'black',
+        padding: 10,
     },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 18,
     },
     button: {
         width: 75,
-        height: 75,
-        borderRadius: 18,
-        backgroundColor: '#333',
+        height: 70,
+        borderRadius: 20,
+        backgroundColor: '#111112',
         justifyContent: 'center',
         alignItems: 'center',
+        margin: 5,
     },
     equalButton: {
         backgroundColor: '#FFA500',
     },
     buttonText: {
-        fontSize: 20,
+        fontSize: 23,
         color: '#fff',
     },
     operatorText: {
