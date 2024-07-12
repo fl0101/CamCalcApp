@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CalculatorScreen() {
 
@@ -10,7 +11,7 @@ export default function CalculatorScreen() {
      * Handle button press
      * @param {string} value - The value of the button pressed
      */
-    const handlePress = (value) => {
+    const handlePress = async (value) => {
         if (value === 'C') {
             setDisplay(''); // Clear the display
             setResult(''); // Clear the results
@@ -30,6 +31,16 @@ export default function CalculatorScreen() {
                 expression = expression.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
 
                 setResult(eval(expression).toString()); // Evaluate the expression
+                
+
+                try {
+                    const resultValue = eval(expression).toString();
+                    await AsyncStorage.setItem('calculationResult', resultValue);
+                    setResult(resultValue);
+                } catch (erros) {
+                    setResult('');
+                }
+
             } catch {
                 setResult('Erro'); // Set result to 'Error' if evaluation fails
             }
@@ -92,7 +103,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'black',
         justifyContent: 'flex-end',
         alignItems: 'flex-end',
-        paddingTop: 260,
+        paddingTop: 170,
         paddingHorizontal: 20,
         paddingBottom: 20,
     },
