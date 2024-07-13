@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import IconCamera from '../components/iconCamera';
 
 export default function CalculatorScreen() {
 
@@ -11,6 +13,39 @@ export default function CalculatorScreen() {
      * Handle button press
      * @param {string} value - The value of the button pressed
      */
+
+    // Load state when mounting the component.
+    useEffect(() => {
+        loadCalculatorState();
+    }, []);
+
+    // Save state whenever 'display' or 'result' changes.
+    useEffect(() => {
+        saveCalculatorState();
+    }, [display, result]);
+
+    // Function to load the saved state
+    const loadCalculatorState = async () => {
+        try {
+            const savedDisplay = await AsyncStorage.getItem('calculatorDisplay');
+            const savedResult = await AsyncStorage.getItem('calculatorResult');
+            if (savedDisplay !== null) setDisplay(savedDisplay);
+            if (savedResult !== null) setResult(savedResult);
+        } catch (error) {
+            console.error('Erro ao carregar estado da calculadora:', error);
+        }
+    };
+
+    // Function to save the current state
+    const saveCalculatorState = async () => {
+        try {
+            await AsyncStorage.setItem('calculatorDisplay', display);
+            await AsyncStorage.setItem('calculatorResult', result);
+        } catch (error) {
+            console.error('Erro ao salver estado da calculador:', error);
+        }
+    };
+
     const handlePress = async (value) => {
         if (value === 'C') {
             setDisplay(''); // Clear the display
@@ -30,15 +65,20 @@ export default function CalculatorScreen() {
                 // Handle percentage
                 expression = expression.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
 
-                setResult(eval(expression).toString()); // Evaluate the expression
-                
+                const resultValue = eval(expression).toString();
+                const historyEntry = `${display} = ${resultValue}`;
 
+                setResult(resultValue);
+
+                // Update the history in AsyncStorage.
                 try {
-                    const resultValue = eval(expression).toString();
-                    await AsyncStorage.setItem('calculationResult', resultValue);
-                    setResult(resultValue);
-                } catch (erros) {
-                    setResult('');
+                    const historyData = await AsyncStorage.getItem('calculationHistory');
+                    let history = historyData ? JSON.parse(historyData) : [];
+                    history.push(historyEntry);
+                    await AsyncStorage.setItem('calculationHistory', JSON.stringify(history));
+
+                } catch (error) {
+                    console.log('Erro ao salvar histórico: ', error);
                 }
 
             } catch {
@@ -67,6 +107,7 @@ export default function CalculatorScreen() {
 
     return (
         <View style={styles.container}>
+            <IconCamera style={styles.camera} icon="photo-camera"/>
             <View style={styles.displayContainer}>
                 <Text style={styles.displayText}>{display}</Text>
                 <Text style={styles.resultText}>{result}</Text>
@@ -146,4 +187,7 @@ const styles = StyleSheet.create({
     operatorText: {
         color: '#FFA500',
     },
+    camera: {
+
+    }
 });
