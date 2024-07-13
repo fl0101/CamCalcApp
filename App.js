@@ -8,7 +8,7 @@ import HistoryScreen from './app/history';
 export default function App() {
   const [activeScreen, setActiveScreen] = useState('Calculator');
 
-  // Função para alternar entre telas
+  // Function to switch between screens.
   const switchScreen = (screen) => {
     setActiveScreen(screen);
   };
