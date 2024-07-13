@@ -1,86 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import IconButton from '../components/iconButton'
 
 export default function HistoryScreen() {
     const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Carrega o histórico do AsyncStorage ao montar o componente
+    // Loads the history from AsyncStorage when mounting the component.
     useEffect(() => {
         loadHistory();
     }, []);
 
-    // Função assíncrona para carregar o histórico de cálculos do AsyncStorage
+    // Async function to load the calculation history from AsyncStorage.
     const loadHistory = async () => {
         try {
-            const historyData = await AsyncStorage.getItem('history');
+            const historyData = await AsyncStorage.getItem('calculationHistory');
             if (historyData !== null) {
                 setHistory(JSON.parse(historyData));
             }
+
         } catch (error) {
-            console.error('Error loading history:', error);
+            console.error('Erro ao carregar histórico:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Função assíncrona para limpar o histórico do AsyncStorage e o estado local
+    // Async function to clear the history from AsyncStorage and local state.
     const clearHistory = async () => {
         try {
-            await AsyncStorage.removeItem('history');
+            await AsyncStorage.removeItem('calculationHistory');
             setHistory([]);
         } catch (error) {
-            console.error('Error clearing history:', error);
+            console.error('Erro ao limpar histórico:', error);
         }
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Histórico</Text>
-            {history.length === 0 ? (
+            <View style={styles.header}>
+                <IconButton style={styles.clearButton} icon="delete" onPress={clearHistory} />
+            </View>
+
+            {loading ? (
+                <ActivityIndicator size="large" color="#fff" />
+            ) :
+
+            history.length === 0 ? (
                 <Text style={styles.emptyText}>Não há dados</Text>
             ) : (
                 <FlatList
                     data={history}
                     renderItem={({ item }) => <Text style={styles.historyItem}>{item}</Text>}
                     keyExtractor={(item, index) => index.toString()}
+                    contentContainerStyle={styles.flatListContainer}
                 />
             )}
-            <TouchableOpacity style={styles.clearButton} onPress={clearHistory}>
-                <Text style={styles.clearButtonText}>Limpar histórico</Text>
-            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: '#fff',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'black',
         padding: 20,
+        alignSelf: 'center',
+        marginVertical: 40,
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginBottom: 20,
     },
     emptyText: {
         fontSize: 18,
         fontStyle: 'italic',
         marginBottom: 10,
+        color: 'white',
+        textAlign: 'center',
+    },
+    flatListContainer: {
+        flex: 1,
+        padding: 5,
     },
     historyItem: {
-        fontSize: 16,
+        fontSize: 18,
+        color: 'white',
+        textAlign: 'right',
         marginBottom: 5,
-    },
-    clearButton: {
-        backgroundColor: '#ff6347',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    clearButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+        padding: 5,
     },
 });
+
