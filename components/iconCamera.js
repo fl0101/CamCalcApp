@@ -1,9 +1,10 @@
-import { Pressable, StyleSheet, } from 'react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import React from 'react'
+import { Pressable, StyleSheet } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function IconCamera({ icon, onPress }) {
+export default function IconCamera({ icon, onPress, style }) {
     return (
-        <Pressable style={styles.iconButton} onPress={onPress}>
+        <Pressable style={[styles.iconButton, style]} onPress={onPress}>
             <MaterialIcons name={icon} size={34} color="#fff" />
         </Pressable>
     );
